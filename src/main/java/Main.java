@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.Scanner;
 import org.apache.commons.cli.*;
 import static java.lang.System.exit;
 import static java.lang.System.out;
@@ -10,55 +12,57 @@ public class Main {
             out.println(-1);
             exit(0);
         }
-
         CommandLineParser parser = new DefaultParser();
         Options options = new Options();
-        options.addOption("t","type",true,"Integer or String (i / s)");
-        options.addOption("k","key",true,"Key to search for");
-        //options.addOption("l","list",true,"List to search for Key");
-        Option list = Option.builder("list")
-                .longOpt("list")
-                .hasArgs()
-                .desc("List to search in")
-                //.valueSeparator(' ')
-                .build();
+
+        Option type = Option.builder("t").longOpt("type").hasArg(true).desc("Integer or String (i / s)").build();
+        Option key = Option.builder("k").longOpt("key").hasArg(true).desc("Key to search for").build();
+        Option list = Option.builder("l").longOpt("list").hasArgs().desc("List to search in").build();
+        options.addOption(type);
+        options.addOption(key);
         options.addOption(list);
 
-        // Created all necessary var fo parsing and storing
-        CommandLine commandLine;
-        Comparable[] aList = {0};
-        Comparable key = 0;
-        String[] aList1 = {};
-
+        String[] aList = {};
+        String sKey = "";
         try {
-            commandLine = parser.parse(options,args);
+            CommandLine commandLine = parser.parse(options, args);
             aList = commandLine.getOptionValues("list");
-            key = commandLine.getOptionValue("key");
-            aList1 = commandLine.getOptionValues("list");
+            sKey = commandLine.getOptionValue("key");
         } catch (ParseException e) {
-            //e.printStackTrace();
-            System.out.println("Problem parsing inputs");
-            exit(0);
+            e.printStackTrace();
         }
-        //int success = compBinSearch(aList,key);
-        out.println(binSearch(aList,key) > 0 ? 1 : 0);
+
+        Comparable[] newList = new Comparable[aList.length];
+        for (int i = 0; i < aList.length; i++)
+            newList[i] = aList[i];
+        Comparable newKey = sKey;
+
+        System.out.println(Arrays.toString(newList));
+        System.out.println("Key: "+ newKey);
+
+        int success = compBinSearch(newList, newKey);
+        //out.println(key.compareTo(aList[5]));
+
+        //out.println(success>0?1:0);
+        out.println(success);
     }
 
-    private static int binSearch(Comparable[] aList, Comparable key){
-        int left = 0, right = aList.length-1;
+    private static int compBinSearch(Comparable[] aList, Comparable key){
+        int left = 0, right = aList.length-1, mid;
 
-        while(left<=right){
+        while(left <= right){
 
-            int mid = left + (right-left)/2;
-            int compareResult = key.compareTo(aList[mid]);
+             //mid = (left+right)/2;
+            mid = left + (right-left)/2;
+            //int place = key.compareTo(aList[mid]);
 
-            if (compareResult==0)
+            if (aList[mid].compareTo(key) == 0)
                 return 1;
 
-            if (compareResult>0)
+            else if (aList[mid].compareTo(key) > 0)
                 right = mid - 1;
 
-            else
+            else if (aList[mid].compareTo(key) < 0)
                 left = mid + 1;
         }
         return -1;
