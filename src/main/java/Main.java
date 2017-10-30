@@ -1,5 +1,4 @@
-import java.util.Scanner;
-import org.apache.commons.*;
+import org.apache.commons.cli.*;
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
@@ -12,117 +11,56 @@ public class Main {
             exit(0);
         }
 
-        //key is temporarily initialized to 0
-        double key = 0;
+        CommandLineParser parser = new DefaultParser();
+        Options options = new Options();
+        options.addOption("t","type",true,"Integer or String (i / s)");
+        options.addOption("k","key",true,"Key to search for");
+        //options.addOption("l","list",true,"List to search for Key");
+        Option list = Option.builder("list")
+                .longOpt("list")
+                .hasArgs()
+                .desc("List to search in")
+                //.valueSeparator(' ')
+                .build();
+        options.addOption(list);
 
-        //Try-catch block in case of erroneous input such as an alphabetical character
+        // Created all necessary var fo parsing and storing
+        CommandLine commandLine;
+        Comparable[] aList = {0};
+        Comparable key = 0;
+        String[] aList1 = {};
+
         try {
-            // Create scanner for key input
-            Scanner keyboard = new Scanner(System.in);
-            key = keyboard.nextDouble();
-        }catch(Exception e){
-            //Error printout
-            out.println(-1);
+            commandLine = parser.parse(options,args);
+            aList = commandLine.getOptionValues("list");
+            key = commandLine.getOptionValue("key");
+            aList1 = commandLine.getOptionValues("list");
+        } catch (ParseException e) {
+            //e.printStackTrace();
+            System.out.println("Problem parsing inputs");
             exit(0);
         }
-
-        // Create int array to store inputted arguments, and another that will run parallel to keep track of unsorted locations
-        double[] aList = new double [args.length];
-        int[] location = new int[args.length];
-
-        try { //Loop to parse string type list 'args' to int type and store in 'aList
-            for (int i = 0; i < args.length; i++) {
-                location[i] = i;
-                aList[i] = Double.parseDouble(args[i]);
-            }
-            //System.out.println(Arrays.toString(location));
-        }catch(Exception e){
-            //Error printout
-            out.println(e);
-            exit(0);
-        }
-
-        //run quicksort to sort inputted array
-        nlognSort(aList,location,0,aList.length-1);
-
-        //store index of key given it was found
-        int index = binSearch(aList,location,key);
-
-        // Prints index if number exists in aList, else prints 0
-        out.println(index>(-1)?index:"The key was not found!");
-
+        //int success = compBinSearch(aList,key);
+        out.println(binSearch(aList,key) > 0 ? 1 : 0);
     }
 
-    private static int binSearch(double[] aList, int[] location,double key){
-
+    private static int binSearch(Comparable[] aList, Comparable key){
         int left = 0, right = aList.length-1;
 
-        while  (left <= right){
+        while(left<=right){
 
             int mid = left + (right-left)/2;
+            int compareResult = key.compareTo(aList[mid]);
 
-            if (Double.compare(aList[mid],key)==0) {//aList[mid]==key)
-                return checkFirst(aList,location,mid);
-            }
+            if (compareResult==0)
+                return 1;
 
-            if (Double.compare(aList[mid],key)>0)//aList[mid]>key)
+            if (compareResult>0)
                 right = mid - 1;
 
             else
                 left = mid + 1;
         }
         return -1;
-    }
-    private static int checkFirst(double[] aList, int[] location, int mid){
-        boolean found = false;
-        boolean first = true;
-        int i = mid, least = location[mid];
-
-        for (i = mid; i < aList.length - 1 && i + 1 <= aList.length - 1; i++){
-            if (Double.compare(aList[i], aList[i + 1]) == 0) {
-                least = least > location[i] ? location [i] : least > location[i+1] ? location[i+1] : least;
-                found = true;
-            }
-            else
-                break;
-
-        }
-        for (i = mid; i > 0 && i - 1 >= 0; i--){
-            if (Double.compare(aList[i], aList[i - 1]) == 0) {
-                least = least > location[i] ? location[i] : least > location[i - 1] ? location[i - 1] : least;
-                found = true;
-            }
-            else
-                break;
-        }
-
-        return found ? least : location[mid];
-    }
-
-    private static void nlognSort(double[] aList, int[] location,int left, int right){
-
-        int i = left, j = right;
-        double pivot = aList[left+(right-left)/2];
-
-        while (i <= j){
-            while(Double.compare(aList[i],pivot)<0)
-                i++;
-            while(Double.compare(aList[j],pivot)>0)
-                j--;
-            if (i <= j){
-                double temp = aList[i];
-                aList[i] = aList[j];
-                aList[j] = temp;
-                int locTemp = location[i];
-                location[i] = location[j];
-                location[j] = locTemp;
-                i++;
-                j--;
-            }
-        }
-        if (left < j)
-            nlognSort(aList, location, left, j);
-        if (i < right)
-            nlognSort(aList, location, i, right);
     }
 }
