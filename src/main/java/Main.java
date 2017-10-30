@@ -1,5 +1,3 @@
-import java.util.Arrays;
-import java.util.Scanner;
 import org.apache.commons.cli.*;
 import static java.lang.System.exit;
 import static java.lang.System.out;
@@ -12,6 +10,7 @@ public class Main {
             out.println(-1);
             exit(0);
         }
+
         CommandLineParser parser = new DefaultParser();
         Options options = new Options();
 
@@ -22,39 +21,67 @@ public class Main {
         options.addOption(key);
         options.addOption(list);
 
+        String inputType = "";
         String[] aList = {};
         String sKey = "";
         try {
             CommandLine commandLine = parser.parse(options, args);
             aList = commandLine.getOptionValues("list");
             sKey = commandLine.getOptionValue("key");
+            inputType = commandLine.getOptionValue("type");
+            //inputType = commandLine.getOptionValue("type").compareTo("i") == 0? 0 : 1;
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        Comparable[] newList = new Comparable[aList.length];
-        for (int i = 0; i < aList.length; i++)
-            newList[i] = aList[i];
-        Comparable newKey = sKey;
+        //Built in redundancy for cases of erroneous input of type (fixes if list is strings and type = i)
+        try{
+            Integer check = Integer.parseInt(aList[0]);
+        }catch(Exception e){
+            inputType = "s";
+        }
 
-        System.out.println(Arrays.toString(newList));
-        System.out.println("Key: "+ newKey);
+        int success = 0;
 
-        int success = compBinSearch(newList, newKey);
-        //out.println(key.compareTo(aList[5]));
+        // If dealing with integers
+        if (inputType.contentEquals("i")){
+            int intKey = Integer.parseInt(sKey);
+            Integer[] intList = new Integer[aList.length];
+            for(int i = 0; i < aList.length; i++)
+                intList[i] = Integer.parseInt(aList[i]);
 
-        //out.println(success>0?1:0);
-        out.println(success);
+            //System.out.println(Arrays.toString(intList));
+            //System.out.println("Key: " + intKey);
+
+            success = binSearch(intList,intKey);
+        }
+
+        // If dealing with strings
+        else if (inputType.contentEquals("s")){
+            Comparable newKey = sKey;
+            Comparable[] newList = new Comparable[aList.length];
+            for (int i = 0; i < aList.length; i++)
+                newList[i] = aList[i];
+
+            //System.out.println(Arrays.toString(newList));
+            //System.out.println("Key: " + newKey);
+
+            success = binSearch(newList, newKey);
+        }
+        else if (!(inputType.contentEquals("i")) || !(inputType.contentEquals("s"))){
+            out.println("You did not enter a valid type.\nPlease try again.");
+            exit(0);
+        }
+
+        out.println(success>0?1:0);
     }
 
-    private static int compBinSearch(Comparable[] aList, Comparable key){
+    private static int binSearch(Comparable[] aList, Comparable key){
         int left = 0, right = aList.length-1, mid;
 
         while(left <= right){
 
-             //mid = (left+right)/2;
             mid = left + (right-left)/2;
-            //int place = key.compareTo(aList[mid]);
 
             if (aList[mid].compareTo(key) == 0)
                 return 1;
@@ -62,7 +89,7 @@ public class Main {
             else if (aList[mid].compareTo(key) > 0)
                 right = mid - 1;
 
-            else if (aList[mid].compareTo(key) < 0)
+            else
                 left = mid + 1;
         }
         return -1;
